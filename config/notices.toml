@@ -1,0 +1,8 @@
+# Analyst-maintained banners shown at the top of every page.
+# Use them for data-quality caveats the APIs cannot tell you about.
+# level: "info" | "warning" | "error"
+
+[[notice]]
+active = false
+level = "warning"
+text = "EIA inventory data may be distorted by Strait of Hormuz disruptions; actual stocks may differ from reported figures."

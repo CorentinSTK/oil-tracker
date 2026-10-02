@@ -1,0 +1,12 @@
+[project]
+name = "oil-tracker"
+version = "0.1.0"
+description = "Crude oil supply & demand tracker: WTI, Brent, Dubai prices, spreads, US inventories, global balance."
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.ruff]
+line-length = 120

@@ -1,0 +1,7 @@
+# Runtime for the Streamlit app (this file is what Streamlit Community Cloud installs)
+streamlit>=1.50
+pandas>=2.2
+numpy>=1.26
+plotly>=5.24
+requests>=2.32
+python-dotenv>=1.0
