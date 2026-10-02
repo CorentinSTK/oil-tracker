@@ -67,6 +67,44 @@ def generate_alerts(ctx: dict) -> list[dict]:
             f"OPEC spare capacity estimated at {gb['opec_spare']:.2f} mb/d (EIA STEO).",
             "Thin spare capacity raises the price impact of any supply outage.")
 
+    for name, cv in ctx.get("curves", {}).items():
+        if cv and cv["structure"].startswith("STEEP"):
+            add(cv["date"], f"curve_{name}", "MEDIUM",
+                f"{name.upper()} curve in {cv['structure'].lower()}: M1-M6 {cv['m1_m6']:+.2f} $/bbl ({cv['m1_m6_pct']:+.1f}%).",
+                "Extreme structure: prompt scarcity (backwardation) or a storage glut (contango). Watch time-spreads "
+                "for the first sign of a turn.")
+
+    streak = ctx.get("surprise_streak", {})
+    if streak.get("length", 0) >= 3:
+        add(ctx["inventory"]["total"]["date"], "surprise_streak", "MEDIUM",
+            f"{streak['length']} consecutive weeks of US stock {streak['direction']} (crude+products vs seasonal).",
+            "A persistent run is more informative than any single week: a trend in the balance.")
+
+    for key, g in ctx.get("gauges", {}).items():
+        if g and g["status"] == "EXTREME" and key in ("ovx", "gpr_daily"):
+            add(g["date"], f"{key}_extreme", "MEDIUM",
+                f"{'OVX' if key == 'ovx' else 'Geopolitical Risk index'} at {g['current']:.0f}, "
+                f"{g['pctile_5y']:.0f}th percentile of 5 years.",
+                "Risk premium likely embedded in prices; expect gap risk on headlines in both directions.")
+
+    for key, c in ctx.get("crack_summary", {}).items():
+        if c and not pd.isna(c["z"]) and abs(c["z"]) >= 2.5:
+            add(c["date"], f"crack_{key}", "MEDIUM",
+                f"{c['label']} at {c['current']:.1f} $/bbl, {c['vs_seasonal']:+.1f} vs seasonal norm (z {c['z']:+.1f}).",
+                "Extreme margins pull crude into refineries (bullish crude) until runs max out or demand cracks.")
+
+    dis = ctx.get("disruptions", {})
+    if dis and dis["total"] - dis["total_3m_ago"] >= 1.0:
+        add(dis["month"], "outages_rising", "HIGH",
+            f"Unplanned supply outages up {dis['total'] - dis['total_3m_ago']:+.1f} mb/d in 3 months "
+            f"to {dis['total']:.1f} mb/d (EIA STEO).", "Check which countries drive it on the OPEC+ page.")
+
+    oe = ctx.get("oecd_summary", {})
+    if oe and abs(oe["vs_5y_pct"]) >= 5:
+        add(oe["date"], "oecd_stocks", "MEDIUM",
+            f"OECD commercial stocks {oe['vs_5y']:+.0f} Mbbl ({oe['vs_5y_pct']:+.1f}%) vs 5Y same-month average.",
+            "A >5% gap to the 5Y norm is where stocks start to drive time-spreads and flat price.")
+
     for key, info in ctx.get("staleness", {}).items():
         if info["stale"]:
             add(pd.Timestamp.today(), f"stale_{key}", "LOW",

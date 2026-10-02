@@ -36,6 +36,16 @@ CREATE TABLE IF NOT EXISTS price_snapshots (
     PRIMARY KEY (code, quoted_at)
 );
 
+CREATE TABLE IF NOT EXISTS futures_prices (
+    root       TEXT NOT NULL,          -- wti | brent
+    contract   TEXT NOT NULL,          -- e.g. CLZ26.NYM
+    delivery   TEXT NOT NULL,          -- delivery month, YYYY-MM-01
+    date       TEXT NOT NULL,
+    close      REAL NOT NULL,
+    fetched_at TEXT NOT NULL,
+    PRIMARY KEY (contract, date)
+);
+
 CREATE TABLE IF NOT EXISTS fetch_log (
     series_key   TEXT PRIMARY KEY,
     last_attempt TEXT NOT NULL,
@@ -128,6 +138,28 @@ def read_fetch_log() -> pd.DataFrame:
             "SELECT series_key, MAX(date) AS last_obs, COUNT(*) AS n_obs FROM observations GROUP BY series_key", c
         )
     return log.merge(last, on="series_key", how="outer")
+
+
+# ---------------------------------------------------------------------- futures
+
+def upsert_futures(conn: sqlite3.Connection, root: str, df: pd.DataFrame) -> int:
+    now = utcnow()
+    rows = [(root, c, d.strftime("%Y-%m-%d"), t.strftime("%Y-%m-%d"), float(v), now)
+            for c, d, t, v in zip(df["contract"], df["delivery"], df["date"], df["close"])]
+    conn.executemany(
+        "INSERT INTO futures_prices (root, contract, delivery, date, close, fetched_at) VALUES (?,?,?,?,?,?) "
+        "ON CONFLICT(contract, date) DO UPDATE SET close=excluded.close, fetched_at=excluded.fetched_at",
+        rows,
+    )
+    return len(rows)
+
+
+def read_futures(root: str) -> pd.DataFrame:
+    with connect() as c:
+        return pd.read_sql_query(
+            "SELECT contract, delivery, date, close FROM futures_prices WHERE root=? ORDER BY date, delivery",
+            c, params=[root], parse_dates=["delivery", "date"],
+        )
 
 
 # ------------------------------------------------------------------- snapshots

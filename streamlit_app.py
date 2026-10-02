@@ -20,16 +20,35 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-pages = [
-    st.Page("views/dashboard.py", title="Dashboard", icon="📊", default=True),
-    st.Page("views/prices.py", title="Price charts", icon="📈"),
-    st.Page("views/fundamentals.py", title="Fundamentals", icon="🛢️"),
-    st.Page("views/spreads.py", title="Spreads analysis", icon="↔️"),
-    st.Page("views/opec.py", title="OPEC+ & global balance", icon="🌍"),
-    st.Page("views/brief.py", title="Daily brief & alerts", icon="📝"),
-    st.Page("views/backtest.py", title="Signal backtest", icon="🧪"),
-    st.Page("views/reports.py", title="Reports & data status", icon="🗓️"),
-]
-nav = st.navigation(pages)
+pages = {
+    "Overview": [
+        st.Page("views/dashboard.py", title="Dashboard", icon="📊", default=True),
+        st.Page("views/brief.py", title="Daily brief & alerts", icon="📝"),
+    ],
+    "Prices & structure": [
+        st.Page("views/prices.py", title="Price charts", icon="📈"),
+        st.Page("views/curve.py", title="Futures curve", icon="〰️"),
+        st.Page("views/spreads.py", title="Spreads analysis", icon="↔️"),
+    ],
+    "US fundamentals": [
+        st.Page("views/fundamentals.py", title="Inventories & runs", icon="🛢️"),
+        st.Page("views/surprises.py", title="Inventory surprises", icon="🎯"),
+        st.Page("views/refining.py", title="Refining & demand", icon="🏭"),
+    ],
+    "Global": [
+        st.Page("views/oecd.py", title="OECD stocks", icon="🌐"),
+        st.Page("views/opec.py", title="Global balance", icon="🌍"),
+        st.Page("views/opec_countries.py", title="OPEC+ by country", icon="🛢"),
+    ],
+    "Risk & research": [
+        st.Page("views/risk.py", title="Geopolitical risk", icon="⚠️"),
+        st.Page("views/correlations.py", title="Correlations", icon="🔗"),
+        st.Page("views/backtest.py", title="Signal backtest", icon="🧪"),
+    ],
+    "Reference": [
+        st.Page("views/reports.py", title="Reports & data status", icon="🗓️"),
+    ],
+}
+nav = st.navigation(pages, expanded=True)
 ui.sidebar(ui.get_ctx())
 nav.run()

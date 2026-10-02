@@ -57,6 +57,34 @@ def build_brief(ctx: dict) -> dict:
         bal = gl["next_3m_avg"]
         watch.append(f"EIA sees the world market {'in surplus' if bal > 0 else 'in deficit'} by "
                      f"{abs(bal):.2f} mb/d over the next 3 months")
+    # Market structure and downstream demand
+    for name, cv in ctx.get("curves", {}).items():
+        if cv and "BACKWARDATION" in cv["structure"]:
+            bull.append(f"{name.upper()} curve in {cv['structure'].lower()} (M1-M6 {cv['m1_m6']:+.2f} $/bbl)")
+        elif cv and "CONTANGO" in cv["structure"]:
+            bear.append(f"{name.upper()} curve in {cv['structure'].lower()} (M1-M6 {cv['m1_m6']:+.2f} $/bbl)")
+    c321 = ctx.get("crack_summary", {}).get("usgc_321")
+    if c321 and c321["signal"] in ("STRONG", "WEAK"):
+        line = (f"USGC 3-2-1 crack {c321['current']:.1f} $/bbl ({c321['vs_seasonal']:+.1f} vs seasonal) - "
+                f"{'refiners incentivised to run hard' if c321['signal'] == 'STRONG' else 'margins discourage runs'}")
+        (bull if c321["signal"] == "STRONG" else bear).append(line)
+    dem = ctx.get("demand", {}).get("ps_total")
+    if dem and not pd.isna(dem["z"]) and abs(dem["z"]) >= 0.5:
+        line = f"US implied demand (4wk) {dem['vs_seasonal_pct']:+.1f}% vs seasonal norm"
+        (bull if dem["z"] > 0 else bear).append(line)
+    oe = ctx.get("oecd_summary", {})
+    if oe and oe["signal"] != "NORMAL":
+        line = (f"OECD stocks {oe['vs_5y']:+.0f} Mbbl vs 5Y ({oe['days_cover']:.1f} days of cover, "
+                f"{oe['days_vs_5y']:+.1f} vs norm)")
+        (bull if oe["signal"] == "TIGHT" else bear).append(line)
+    dis = ctx.get("disruptions", {})
+    if dis and dis["total"] >= 2 * dis["total_5y_avg"]:
+        watch.append(f"Unplanned outages {dis['total']:.1f} mb/d vs a 5Y average of {dis['total_5y_avg']:.1f} "
+                     f"({dis['month']:%b %Y}, EIA STEO)")
+    ovx = ctx.get("gauges", {}).get("ovx")
+    if ovx and ovx["status"] in ("ELEVATED", "EXTREME"):
+        watch.append(f"OVX {ovx['current']:.0f} ({ovx['pctile_5y']:.0f}th pctile 5Y): headline risk priced in")
+
     nxt = next((e for e in upcoming(days=10) if e.source == "EIA" and "Weekly" in e.name), None)
     if nxt:
         watch.append(f"Next EIA weekly report: {_fmt_d(nxt.when)} {nxt.when:%H:%M} ET")

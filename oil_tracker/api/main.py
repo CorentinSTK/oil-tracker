@@ -115,6 +115,53 @@ def global_balance():
     return clean(ctx()["global"])
 
 
+@app.get("/api/v1/curve")
+def futures_curve():
+    out = {}
+    for name, cv in ctx()["curves"].items():
+        if cv:
+            out[name] = {k: v for k, v in cv.items() if k not in ("dec_spread", "history", "contracts", "curve")}
+            out[name]["curve"] = cv["curve"].to_dict()
+    return clean(out)
+
+
+@app.get("/api/v1/refining")
+def refining():
+    c = ctx()
+    return clean({"cracks": c["crack_summary"], "implied_demand": c["demand"], "demand_score": c["demand_score"]})
+
+
+@app.get("/api/v1/oecd")
+def oecd():
+    return clean(ctx()["oecd_summary"])
+
+
+@app.get("/api/v1/surprises")
+def inventory_surprises(weeks: int = Query(12, ge=1, le=520)):
+    c = ctx()
+    return clean({k: records(v.iloc[-weeks:].drop(columns=["release"])) for k, v in c["surprises"].items()}
+                 | {"streak": c["surprise_streak"]})
+
+
+@app.get("/api/v1/opec/countries")
+def opec_countries():
+    c = ctx()
+    return clean({"month": c["opec_month"], "countries": c["opec_table"].to_dict(orient="records")})
+
+
+@app.get("/api/v1/disruptions")
+def supply_disruptions():
+    d = dict(ctx()["disruptions"])
+    if "by_country" in d:
+        d["by_country"] = d["by_country"].to_dict(orient="records")
+    return clean(d)
+
+
+@app.get("/api/v1/risk")
+def risk_gauges():
+    return clean(ctx()["gauges"])
+
+
 @app.get("/api/v1/alerts")
 def alerts(limit: int = Query(100, ge=1, le=1000)):
     return clean(db.read_alerts(limit).to_dict(orient="records"))

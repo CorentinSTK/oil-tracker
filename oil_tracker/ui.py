@@ -174,3 +174,26 @@ def sidebar(ctx: dict) -> None:
             "Free public data (EIA, FRED, OilPriceAPI). For production trading, cross-check with "
             "Bloomberg, LSEG or your broker. **Not investment advice.**"
         )
+
+
+# ------------------------------------------------------------------ manual data
+
+def manual_editor(name: str, title: str) -> None:
+    """Edit one of the analyst-maintained CSVs (see oil_tracker/manual.py)."""
+    from oil_tracker import manual
+
+    schema = manual.SCHEMAS[name]
+    with st.expander(f"✏️ {title}", expanded=False):
+        st.caption(schema["help"])
+        df = manual.load(name)
+        cfg = {c: st.column_config.DateColumn(format="YYYY-MM-DD") for c, t in schema["columns"].items() if t == "date"}
+        edited = st.data_editor(df, num_rows="dynamic", hide_index=True, width="stretch", column_config=cfg,
+                                key=f"editor_{name}")
+        a, b = st.columns(2)
+        if a.button("Save", key=f"save_{name}", width="stretch"):
+            path = manual.save(edited, name)
+            _context.clear()
+            st.success(f"Saved to {path.relative_to(config.ROOT)}. On Streamlit Cloud this lasts until the app "
+                       "restarts - download the CSV and commit it to keep it.")
+        b.download_button("Download CSV", manual.to_csv(edited, name), file_name=schema["file"],
+                          key=f"dl_{name}", width="stretch")

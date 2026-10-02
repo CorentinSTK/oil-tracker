@@ -7,7 +7,7 @@ import streamlit as st
 from oil_tracker import ui
 
 ctx = ui.get_ctx()
-ui.page_header("OPEC+ & global balance", ctx, "EIA Short-Term Energy Outlook (monthly). Shaded area = EIA forecast. "
+ui.page_header("Global balance", ctx, "EIA Short-Term Energy Outlook (monthly). Shaded area = EIA forecast. "
                "IEA and OPEC monthly reports are not machine-readable for free - see Reports for links.")
 
 gb, g = ctx["global_balance"], ctx["global"]
@@ -83,5 +83,4 @@ with b:
 
 if "opecplus_prod" in v:
     st.caption(f"OPEC+ crude production (EIA): {v.loc[~v['forecast'], 'opecplus_prod'].dropna().iloc[-1]:.2f} mb/d "
-               "latest estimate. Quota compliance by country is not in the free EIA feed; track it from the "
-               "OPEC MOMR secondary-sources table (Reports page).")
+               "latest estimate. Country detail, quotas and outages are on the *OPEC+ by country* page.")

@@ -37,11 +37,21 @@ log = db.read_fetch_log()
 meta = pd.DataFrame([{"series_key": k, "Series": s.label, "Source": f"{s.source.upper()} {s.remote_id}",
                       "Freq": s.frequency, "Unit": s.unit} for k, s in SERIES.items()]
                     + [{"series_key": "snapshot", "Series": "Live snapshot", "Source": "OilPriceAPI", "Freq": "intraday",
-                        "Unit": "$/bbl"}])
+                        "Unit": "$/bbl"}]
+                    + [{"series_key": f"futures_{n}", "Series": f"{n.upper()} futures by contract",
+                        "Source": "Yahoo Finance", "Freq": "D", "Unit": "$/bbl"} for n in ("wti", "brent")])
 tbl = meta.merge(log, on="series_key", how="left")
 tbl["Last fetch"] = tbl["last_success"].map(ui.age)
 tbl["Status"] = tbl["last_error"].map(lambda e: f"ERROR: {e}" if isinstance(e, str) and e else "ok")
-st.dataframe(tbl[["Series", "Source", "Freq", "Unit", "last_obs", "n_obs", "Last fetch", "Status"]].rename(
-    columns={"last_obs": "Latest obs", "n_obs": "Rows"}), hide_index=True, width="stretch")
-st.caption("STEO 'latest obs' includes EIA forecast months. Refresh cadence: daily/weekly series every 6h, "
-           "monthly every 24h, snapshot every hour - or use *Force refresh* in the sidebar.")
+show = ["Series", "Source", "Freq", "Unit", "last_obs", "n_obs", "Last fetch", "Status"]
+names = {"last_obs": "Latest obs", "n_obs": "Rows"}
+country = tbl["series_key"].str.match(r"^(prod|cap|spare|outage)_(?!opec|nonopec)")
+errors = tbl[tbl["Status"] != "ok"]
+if not errors.empty:
+    st.error(f"{len(errors)} series failed on their last fetch: " + ", ".join(errors["Series"].head(8)))
+st.dataframe(tbl.loc[~country, show].rename(columns=names), hide_index=True, width="stretch")
+with st.expander(f"STEO country series ({int(country.sum())})"):
+    st.dataframe(tbl.loc[country, show].rename(columns=names), hide_index=True, width="stretch")
+st.caption("STEO 'latest obs' includes EIA forecast months. Refresh cadence, checked on each visit: EIA weekly "
+           "series as soon as a new Weekly Petroleum Status Report is out (fallback every 6h), daily series and futures "
+           "every 6h, GPR every 12h, monthly every 24h, snapshot every hour. *Force refresh* in the sidebar refetches all.")

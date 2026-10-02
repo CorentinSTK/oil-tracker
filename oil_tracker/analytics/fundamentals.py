@@ -55,12 +55,14 @@ def refinery_summary(util: pd.Series) -> dict:
     st = seasonal_stats(util)
     cur = float(util.iloc[-1])
     vs5 = float(st["dev"].iloc[-1])
+    sd = float(st["dev"].dropna().iloc[-260:].std())
     return {
         "date": util.index[-1],
         "level": cur,
         "wow": cur - float(util.iloc[-2]),
         "avg_5y": float(st["avg"].iloc[-1]),
         "vs_5y": vs5,
+        "z": vs5 / sd if sd > 0 else np.nan,
         # Judge vs the seasonal norm: 92% is weak in July but strong in October.
         "signal": "STRONG" if vs5 >= 1.0 else "WEAK" if vs5 <= -1.0 else "NORMAL",
     }
@@ -122,4 +124,55 @@ def balance_summary(gb: pd.DataFrame) -> dict:
         "opec_spare_date": spare_hist.index[-1] if not spare_hist.empty else None,
         "days_cover": float(cover_hist.iloc[-1]) if not cover_hist.empty else np.nan,
         "days_cover_5y": float(cover_hist.iloc[-61:-1].mean()) if len(cover_hist) > 12 else np.nan,
+    }
+
+
+# ----------------------------------------------------------------- OECD stocks
+
+def monthly_seasonal(s: pd.Series, years: int = 5) -> pd.DataFrame:
+    """Each month vs the average of the same calendar month in the prior
+    ``years`` years (current year excluded)."""
+    s = s.dropna()
+    df = pd.DataFrame({"value": s, "year": s.index.year, "month": s.index.month})
+    grid = df.pivot_table(index="year", columns="month", values="value")
+    avg = [grid.loc[(grid.index >= y - years) & (grid.index < y), m].mean() if m in grid else np.nan
+           for y, m in zip(df["year"], df["month"])]
+    out = pd.DataFrame({"value": s, "avg_5y": avg}, index=s.index)
+    out["dev"] = out["value"] - out["avg_5y"]
+    return out
+
+
+def oecd_stocks(gb: pd.DataFrame) -> pd.DataFrame:
+    """OECD commercial stocks and days of cover, each vs its 5Y same-month average."""
+    st = monthly_seasonal(gb["oecd_stocks"])
+    cover = monthly_seasonal(gb["oecd_days_cover"])
+    out = pd.DataFrame({
+        "stocks": st["value"], "stocks_5y": st["avg_5y"], "stocks_vs_5y": st["dev"],
+        "days_cover": cover["value"], "days_cover_5y": cover["avg_5y"], "days_cover_vs_5y": cover["dev"],
+    })
+    for k in ("us_stocks_steo", "other_oecd_stocks"):
+        if k in gb:
+            out[k] = gb[k]
+    out["forecast"] = is_forecast(out.index)
+    return out
+
+
+def oecd_summary(oecd: pd.DataFrame) -> dict:
+    hist = oecd[~oecd["forecast"]].dropna(subset=["stocks", "stocks_5y"])
+    if hist.empty:
+        return {}
+    last = hist.iloc[-1]
+    prev = hist["stocks"].asof(hist.index[-1] - pd.DateOffset(months=1))
+    return {
+        "date": hist.index[-1],
+        "stocks": float(last["stocks"]),
+        "mom": float(last["stocks"] - prev),
+        "stocks_5y": float(last["stocks_5y"]),
+        "vs_5y": float(last["stocks_vs_5y"]),
+        "vs_5y_pct": float(last["stocks_vs_5y"] / last["stocks_5y"] * 100),
+        "days_cover": float(last["days_cover"]),
+        "days_cover_5y": float(last["days_cover_5y"]),
+        "days_vs_5y": float(last["days_cover_vs_5y"]),
+        "signal": "TIGHT" if last["stocks_vs_5y"] < -0.02 * last["stocks_5y"]
+        else "LOOSE" if last["stocks_vs_5y"] > 0.02 * last["stocks_5y"] else "NORMAL",
     }
