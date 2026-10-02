@@ -21,7 +21,7 @@ for col, (name, cv) in zip(cols, curves.items()):
         continue
     with col:
         st.metric(f"{name.upper()} structure · {cv['date']:%d %b}", cv["structure"].title(),
-                  f"M1-M6 {cv['m1_m6']:+.2f} $/bbl ({cv['m1_m6_pct']:+.1f}%)", delta_color="off", border=True)
+                  f"M1-M6 {cv['m1_m6']:+.2f} $/bbl ({cv['m1_m6_pct']:+.1f}%)", delta_color="off", delta_arrow="off", border=True)
         st.caption(f"M1-M2 {cv['m1_m2']:+.2f} · M1-M3 {cv['m1_m3']:+.2f} · M1-M12 {ui.fmt(cv['m1_m12'], sign=True)} · "
                    f"{cv['dec_label']} {cv['dec_spread'].iloc[-1]:+.2f}" if len(cv["dec_spread"]) else "")
 

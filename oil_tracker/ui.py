@@ -197,3 +197,17 @@ def manual_editor(name: str, title: str) -> None:
                        "restarts - download the CSV and commit it to keep it.")
         b.download_button("Download CSV", manual.to_csv(edited, name), file_name=schema["file"],
                           key=f"dl_{name}", width="stretch")
+
+
+def table(df: pd.DataFrame, fmt: dict[str, str] | None = None, **kwargs) -> None:
+    """st.dataframe that shows missing values as '—' instead of 'None'.
+
+    Streamlit renders NaN as 'None' and ignores Styler's na_rep, so values are
+    formatted to text here (columns are display-only, not sortable as numbers).
+    """
+    out = df.copy()
+    for col in out.columns:
+        f = (fmt or {}).get(col)
+        out[col] = out[col].map(lambda v, f=f: "—" if v is None or (not isinstance(v, str) and pd.isna(v))
+                                else f.format(v) if f else str(v))
+    st.dataframe(out, hide_index=True, width="stretch", **kwargs)

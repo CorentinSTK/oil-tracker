@@ -17,10 +17,10 @@ if not oe:
 
 c = st.columns(4)
 c[0].metric(f"OECD commercial stocks · {oe['date']:%b %Y}", f"{oe['stocks']:,.0f} Mbbl", f"{oe['mom']:+,.0f} m/m",
-            delta_color="off", border=True)
-c[1].metric("vs 5Y same-month avg", f"{oe['vs_5y']:+,.0f} Mbbl", f"{oe['vs_5y_pct']:+.1f}%", delta_color="off", border=True)
+            delta_color="off", delta_arrow="off", border=True)
+c[1].metric("vs 5Y same-month avg", f"{oe['vs_5y']:+,.0f} Mbbl", f"{oe['vs_5y_pct']:+.1f}%", delta_color="off", delta_arrow="off", border=True)
 c[2].metric("Days of forward demand cover", f"{oe['days_cover']:.1f} d", f"{oe['days_vs_5y']:+.1f} d vs 5Y",
-            delta_color="off", border=True)
+            delta_color="off", delta_arrow="off", border=True)
 with c[3]:
     st.metric("Read", oe["signal"], border=True)
     st.caption("TIGHT / LOOSE when stocks are more than 2% below / above the 5Y norm. Low stocks = bullish.")

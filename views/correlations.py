@@ -18,8 +18,9 @@ days = {"3M": 92, "6M": 183, "1Y": 365, "3Y": 1096}[window]
 cm = correlation_matrix(frame, days)
 labels = [CORR_ASSETS[c] for c in cm.columns]
 
-# Diverging blue <-> red with a neutral gray midpoint (dark-theme steps).
-scale = [[0.0, "#1c5cab"], [0.25, "#5598e7"], [0.5, "#383835"], [0.75, "#e66767"], [1.0, "#d03b3b"]]
+# Diverging orange (negative) <-> blue (positive) with a neutral gray midpoint.
+# Not red: red means bearish/alert everywhere else in the app.
+scale = [[0.0, "#d95926"], [0.25, "#a5502c"], [0.5, "#383835"], [0.75, "#256abf"], [1.0, "#3987e5"]]
 z = cm.to_numpy().copy()
 np.fill_diagonal(z, np.nan)  # the diagonal is 1 by definition; hide it so it doesn't dominate the scale
 fig = go.Figure(go.Heatmap(

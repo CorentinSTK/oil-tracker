@@ -85,7 +85,7 @@ def upcoming(today: date | None = None, days: int = 35) -> list[Event]:
         ev += [
             Event(datetime.combine(_nth_weekday_on_or_after(y, mo, 6, 1), time(12, 0), ET),
                   "EIA Short-Term Energy Outlook", "EIA", "https://www.eia.gov/outlooks/steo/release_schedule.php",
-                  estimated=True, note="Usually the first Tuesday after the 5th"),
+                  estimated=True, note="1st Tue after the 5th"),
             Event(datetime.combine(_nth_weekday_on_or_after(y, mo, 11, 0) + timedelta(days=1), time(7, 0), ET),
                   "OPEC Monthly Oil Market Report", "OPEC", "https://www.opec.org/opec_web/en/publications/338.htm",
                   estimated=True, note="Mid-month"),

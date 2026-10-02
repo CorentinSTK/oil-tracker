@@ -23,8 +23,10 @@ stk = streak(s["surprise"])
 c = st.columns(4)
 c[0].metric(f"Actual change · week {s.index[-1]:%d %b}", f"{last['actual']:+.2f} Mbbl", border=True)
 c[1].metric("Seasonal norm (5Y same week)", f"{last['expected']:+.2f} Mbbl", border=True)
-c[2].metric("Surprise vs norm", f"{last['surprise']:+.2f} Mbbl", f"z {last['z']:+.1f}", delta_color="inverse", border=True)
-c[3].metric("Current run", f"{stk['length']} wk", stk["direction"], delta_color="off", border=True)
+c[2].metric("Surprise vs norm", f"{last['surprise']:+.2f} Mbbl", f"z {last['z']:+.1f}",
+            delta_color="inverse" if abs(last["z"]) >= 0.5 else "off",
+            delta_arrow="auto" if abs(last["z"]) >= 0.5 else "off", border=True)
+c[3].metric("Current run", f"{stk['length']} wk", stk["direction"], delta_color="off", delta_arrow="off", border=True)
 
 recent = s.iloc[-26:]
 fig = go.Figure(go.Bar(
@@ -52,7 +54,7 @@ if stats:
     m[1].metric("Correlation surprise vs release-day move", f"{stats['corr']:+.2f}", border=True)
     m[2].metric("Move per +10 Mbbl surprise", f"{stats['slope_pct_per_10mb']:+.2f}%", border=True)
     m[3].metric("Big surprises (|z|≥1.5) moving price the 'right' way", f"{stats['hit_rate_big']:.0f}%",
-                f"n = {stats['n_big']}", delta_color="off", border=True)
+                f"n = {stats['n_big']}", delta_color="off", delta_arrow="off", border=True)
     fig = go.Figure(go.Scatter(
         x=rel["surprise"], y=rel["px_chg_pct"], mode="markers",
         marker=dict(size=8, color=ui.COLORS[bench], opacity=0.55, line=dict(width=1, color=ui.SURFACE)),
@@ -77,9 +79,8 @@ if cs.empty:
             "(Reuters, WSJ, Bloomberg) are not available through a free API: add them below each Tuesday.")
 else:
     piv = cs.pivot_table(index="week_ending", columns="item", values="surprise").sort_index(ascending=False)
-    st.dataframe(cs.sort_values("week_ending", ascending=False), hide_index=True, width="stretch",
-                 column_config={c: st.column_config.NumberColumn(format="%+.2f") for c in ["expected", "actual", "surprise"]}
-                 | {"week_ending": st.column_config.DateColumn("Week ending", format="DD MMM YYYY")})
+    ui.table(cs.sort_values("week_ending", ascending=False).assign(week_ending=lambda d: d["week_ending"].dt.date),
+             {c: "{:+.2f}" for c in ["expected", "actual", "surprise"]})
     crude = piv.get("Crude")
     if crude is not None:
         st.caption(f"Crude: {streak(crude.sort_index())['length']}-week current run of "

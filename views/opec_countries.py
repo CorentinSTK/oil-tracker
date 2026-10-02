@@ -25,8 +25,7 @@ cols = [c for c in ["Country", "Group", "Production", "m/m", "y/y", "Capacity", 
                     "Quota", "vs quota", "% of quota"] if c in show]
 fmt = {c: "{:.2f}" for c in ["Production", "Capacity", "Spare", "Quota"]} | \
       {c: "{:+.2f}" for c in ["m/m", "y/y", "vs quota"]} | {c: "{:.0f}" for c in ["Capacity used %", "% of quota"]}
-st.dataframe(show[cols].style.format({k: v for k, v in fmt.items() if k in cols}, na_rep="—"),
-             hide_index=True, width="stretch")
+ui.table(show[cols], fmt)
 st.caption("mb/d. Capacity and spare capacity are published for OPEC members only. UAE appears as total liquids "
            "(crude + condensate + NGLs): the STEO has no crude-only UAE series and its OPEC total excludes UAE.")
 if ctx["quotas"].empty:

@@ -18,7 +18,7 @@ if not rk.empty:
     for col, (_, r) in zip(cols, rk.iterrows()):
         with col:
             st.metric(f"#{_ + 1} {r['spread']}", f"{r['current']:+.2f} $/bbl", f"z {r['z_5y']:+.1f} vs 5Y",
-                      delta_color="off", border=True)
+                      delta_color="off", delta_arrow="off", border=True)
             st.markdown(ui.badge(r["status"]) + f" <span style='color:{ui.INK['muted']};font-size:0.8rem'>"
                         f"{r['pctile_5y']:.0f}th pctile · 5Y avg {r['avg_5y']:+.2f}</span>", unsafe_allow_html=True)
     st.caption("Ranked by |z-score| against each spread's own 5-year history.")

@@ -16,7 +16,7 @@ ds = ctx["demand_score"]
 cs = ctx["crack_summary"]
 c = st.columns(4)
 if ds:
-    c[0].metric("Demand strength (0-100)", f"{ds['score']:.0f}", ds["label"], delta_color="off", border=True)
+    c[0].metric("Demand strength (0-100)", f"{ds['score']:.0f}", ds["label"], delta_color="off", delta_arrow="off", border=True)
     c[0].caption(" · ".join(f"{k} {v:+.2f}" for k, v in ds["components"].items()))
 for col, k in zip(c[1:], ("usgc_321", "nyh_321", "ulsd_crack")):
     d = cs.get(k)

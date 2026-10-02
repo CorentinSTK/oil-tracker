@@ -18,7 +18,7 @@ for col, (k, d) in zip(cols, g.items()):
         continue
     with col:
         st.metric(f"{GAUGES[k][0]} · {d['date']:%d %b}", f"{d['current']:.1f}", f"{d['chg_1m']:+.1f} vs 1M ago",
-                  delta_color="off", border=True)
+                  delta_color="off", delta_arrow="off", border=True)
         st.markdown(ui.badge({"EXTREME": "ANOMALY", "ELEVATED": "WIDE", "LOW": "NORMAL"}.get(d["status"], "NORMAL"),
                              d["status"]) + f" <span style='color:{ui.INK['muted']};font-size:0.8rem'>"
                     f"{d['pctile_5y']:.0f}th pctile 5Y</span>", unsafe_allow_html=True)

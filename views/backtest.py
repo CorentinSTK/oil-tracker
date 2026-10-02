@@ -28,11 +28,11 @@ if res.empty:
     st.stop()
 
 m = st.columns(6)
-m[0].metric("Total P&L", f"{stats['total_pnl']:+.1f} $/bbl", border=True)
-m[1].metric("Buy & hold", f"{stats['buy_hold_pnl']:+.1f} $/bbl", border=True)
+m[0].metric("Total P&L ($/bbl)", f"{stats['total_pnl']:+.0f}", border=True)
+m[1].metric("Buy & hold ($/bbl)", f"{stats['buy_hold_pnl']:+.0f}", border=True)
 m[2].metric("Sharpe (ann.)", f"{stats['sharpe']:.2f}", border=True)
 m[3].metric("Hit rate", f"{stats['hit_rate']:.0f}%", border=True)
-m[4].metric("Max drawdown", f"{stats['max_drawdown']:.1f} $/bbl", border=True)
+m[4].metric("Max drawdown ($/bbl)", f"{stats['max_drawdown']:.0f}", border=True)
 m[5].metric("Rank IC", f"{stats['ic']:+.3f}", help="Spearman correlation of the score with the next week's price move.",
             border=True)
 st.caption(f"{stats['weeks']} weekly releases from {stats['start']:%d %b %Y} to {stats['end']:%d %b %Y} · "

@@ -105,22 +105,22 @@ st.markdown("#### Structure, demand & risk")
 k = st.columns(5)
 cv = ctx["curves"].get("brent") or ctx["curves"].get("wti")
 if cv:
-    k[0].metric(f"Brent curve · M1-M6", f"{cv['m1_m6']:+.2f} $/bbl", cv["structure"].title(), delta_color="off", border=True)
+    k[0].metric("Brent curve · M1-M6 ($/bbl)", f"{cv['m1_m6']:+.2f}", cv["structure"].title(), delta_color="off", delta_arrow="off", border=True)
 oe = ctx["oecd_summary"]
 if oe:
-    k[1].metric(f"OECD stocks vs 5Y · {oe['date']:%b}", f"{oe['vs_5y']:+,.0f} Mbbl",
-                f"{oe['days_cover']:.1f} days cover ({oe['days_vs_5y']:+.1f})", delta_color="off", border=True)
+    k[1].metric("OECD stocks vs 5Y (Mbbl)", f"{oe['vs_5y']:+,.0f}",
+                f"{oe['days_cover']:.1f} days cover · {oe['date']:%b}", delta_color="off", delta_arrow="off", border=True)
 c321 = ctx["crack_summary"].get("usgc_321")
 if c321:
-    k[2].metric("USGC 3-2-1 crack", f"{c321['current']:.1f} $/bbl", f"{c321['vs_seasonal']:+.1f} vs seasonal",
-                delta_color="off", border=True)
+    k[2].metric("USGC 3-2-1 crack ($/bbl)", f"{c321['current']:.1f}", f"{c321['vs_seasonal']:+.1f} vs seasonal",
+                delta_color="off", delta_arrow="off", border=True)
 ds = ctx["demand_score"]
 if ds:
-    k[3].metric("Demand strength", f"{ds['score']:.0f} / 100", ds["label"], delta_color="off", border=True)
+    k[3].metric("Demand strength", f"{ds['score']:.0f} / 100", ds["label"], delta_color="off", delta_arrow="off", border=True)
 ovx, gpr = ctx["gauges"].get("ovx"), ctx["gauges"].get("gpr_daily")
 if ovx and gpr:
     k[4].metric("OVX · GPR (7d)", f"{ovx['current']:.0f} · {gpr['current']:.0f}",
-                f"{ovx['pctile_5y']:.0f}th / {gpr['pctile_5y']:.0f}th pctile 5Y", delta_color="off", border=True)
+                f"{ovx['pctile_5y']:.0f}th / {gpr['pctile_5y']:.0f}th pctile 5Y", delta_color="off", delta_arrow="off", border=True)
 
 # ---------------------------------------------------------------- implications
 st.markdown("#### Market implications")

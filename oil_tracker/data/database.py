@@ -135,7 +135,9 @@ def read_fetch_log() -> pd.DataFrame:
     with connect() as c:
         log = pd.read_sql_query("SELECT * FROM fetch_log", c)
         last = pd.read_sql_query(
-            "SELECT series_key, MAX(date) AS last_obs, COUNT(*) AS n_obs FROM observations GROUP BY series_key", c
+            "SELECT series_key, MAX(date) AS last_obs, COUNT(*) AS n_obs FROM observations GROUP BY series_key "
+            "UNION ALL SELECT 'futures_' || root, MAX(date), COUNT(*) FROM futures_prices GROUP BY root "
+            "UNION ALL SELECT 'snapshot', substr(MAX(quoted_at), 1, 10), COUNT(*) FROM price_snapshots", c
         )
     return log.merge(last, on="series_key", how="outer")
 

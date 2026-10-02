@@ -55,12 +55,10 @@ for k, label in (("wti", "WTI"), ("brent", "Brent"), ("dubai", "Dubai (monthly)"
         "Vol 30D %": m["vol_30d"] if k != "dubai" else None,
         "Support": lv.get(k, {}).get("support"), "Resistance": lv.get(k, {}).get("resistance"),
     })
-st.dataframe(pd.DataFrame(rows), hide_index=True, width="stretch",
-             column_config={c: st.column_config.NumberColumn(format="%.2f") for c in
-                            ["Last", "1Y avg", "5Y avg", "52w high", "52w low", "Support", "Resistance"]}
-             | {c: st.column_config.NumberColumn(format="%+.1f") for c in
-                ["Chg (last obs) %", "vs 30D avg %", "1M %", "vs 52w high %"]}
-             | {"Vol 30D %": st.column_config.NumberColumn(format="%.0f")})
+ui.table(pd.DataFrame(rows),
+         {c: "{:.2f}" for c in ["Last", "1Y avg", "5Y avg", "52w high", "52w low", "Support", "Resistance"]}
+         | {c: "{:+.1f}" for c in ["Chg (last obs) %", "vs 30D avg %", "1M %", "vs 52w high %"]}
+         | {"Vol 30D %": "{:.0f}"})
 st.caption("Support/resistance: clustered swing highs/lows (±5 sessions) over the last 6 months; "
            "nearest level below/above the last close.")
 
@@ -76,7 +74,10 @@ if snap_rows:
     sh["quoted_at"] = pd.to_datetime(sh["quoted_at"], utc=True, format="ISO8601")
     st.caption(f"{len(sh)} snapshots stored since {sh['quoted_at'].min():%d %b %Y}. The tracker builds its own "
                "daily Dubai history from these over time.")
-    st.dataframe(sh.pivot_table(index="quoted_at", columns="benchmark", values="price").sort_index(ascending=False).head(30),
-                 width="stretch")
+    # One row per day (last quote of each benchmark that day): providers stamp
+    # each quote separately, so a per-timestamp grid would be mostly empty.
+    sh["Day"] = sh["quoted_at"].dt.strftime("%Y-%m-%d")
+    daily = sh.sort_values("quoted_at").pivot_table(index="Day", columns="benchmark", values="price", aggfunc="last")
+    ui.table(daily.sort_index(ascending=False).head(30).reset_index(), {c: "{:.2f}" for c in daily.columns})
 else:
     st.caption("No snapshots yet.")
