@@ -52,3 +52,16 @@ pages = {
 nav = st.navigation(pages, expanded=True)
 ui.sidebar(ui.get_ctx())
 nav.run()
+"""
+Oil Market Tracker - Main Streamlit App
+"""
+import sys
+from pathlib import Path
+
+# Add package to path
+sys.path.insert(0, str(Path(__file__).parent))
+
+from oil_tracker.app import run
+
+if __name__ == "__main__":
+    run()
