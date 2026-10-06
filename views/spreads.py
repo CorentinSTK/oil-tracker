@@ -12,6 +12,12 @@ ui.page_header("Spreads analysis", ctx, "Each spread compares two prices of the 
                "Dubai spreads on monthly averages (no free daily Dubai history).")
 
 st.markdown("#### Which spread is most dislocated?")
+st.markdown(
+    "**Note on Dubai data:** Monthly averages only with 2–3 month publication lag (IMF via FRED). "
+    "No daily Dubai history is available free; Platts assessments require subscription. "
+    "Monthly data is suitable for trend analysis but lags spot prices significantly.",
+    help="Dubai is a monthly average from the IMF published on FRED. The lag reflects data collection and publication timelines at the IMF."
+)
 rk = ctx["ranking"]
 if not rk.empty:
     cols = st.columns(len(rk))

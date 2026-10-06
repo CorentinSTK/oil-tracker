@@ -16,7 +16,17 @@ ds = ctx["demand_score"]
 cs = ctx["crack_summary"]
 c = st.columns(4)
 if ds:
-    c[0].metric("Demand strength (0-100)", f"{ds['score']:.0f}", ds["label"], delta_color="off", delta_arrow="off", border=True)
+    c[0].metric(
+        "Demand strength (0-100)",
+        f"{ds['score']:.0f}",
+        ds["label"],
+        delta_color="off",
+        delta_arrow="off",
+        border=True,
+        help="Composite of three components (each normalized to seasonal norm): implied demand (product supplied), "
+             "USGC 3-2-1 crack, and refinery utilization. Score 50 = seasonal normal. Values >50 indicate stronger-than-seasonal demand "
+             "and profitability; <50 indicate seasonal weakness."
+    )
     c[0].caption(" · ".join(f"{k} {v:+.2f}" for k, v in ds["components"].items()))
 for col, k in zip(c[1:], ("usgc_321", "nyh_321", "ulsd_crack")):
     d = cs.get(k)
@@ -25,9 +35,12 @@ for col, k in zip(c[1:], ("usgc_321", "nyh_321", "ulsd_crack")):
 st.caption("Demand strength = 50 + 50 × mean of tanh(z/2) for US implied demand, the USGC 3-2-1 crack and refinery "
            "runs, each against its own seasonal norm. 50 = normal for the time of year.")
 
-st.warning("**No European or Asian margins.** Rotterdam and Singapore product prices are not available from any "
-           "free source, so the NYH-vs-Brent crack is shown as the Atlantic-basin proxy and Asia is left out "
-           "rather than estimated.", icon="ℹ️")
+st.warning(
+    "**No European or Asian margins.** Rotterdam and Singapore 3-2-1 crack spreads require daily product price quotes "
+    "(Platts MOPS for Singapore, Argus for Rotterdam) that are only available via paid subscriptions. Rather than estimate, "
+    "this tracker shows the NYH-vs-Brent crack as an Atlantic-basin proxy. See **Data Sources & Freshness** for details.",
+    icon="ℹ️"
+)
 
 # ---------------------------------------------------------------- cracks
 st.markdown("#### Crack spreads")

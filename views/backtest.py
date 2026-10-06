@@ -1,4 +1,8 @@
-"""Historical test of the S&D score as a weekly directional signal."""
+"""Historical test of the S&D score as a weekly directional signal.
+
+This page shows how the S&D balance score would have performed as a trading signal in
+the past. It is provided for reference and validation of the score's design, not as
+investment advice or a prediction of future performance."""
 
 import plotly.graph_objects as go
 import streamlit as st
@@ -8,8 +12,8 @@ from oil_tracker.analytics.backtest import run_backtest
 from oil_tracker.analytics.balance import WEIGHTS
 
 ctx = ui.get_ctx()
-ui.page_header("Signal backtest", ctx, "If I had traded the S&D balance score at every EIA release, what would the P&L "
-               "have been?")
+ui.page_header("S&D Analysis (Historical)", ctx, "How would the S&D balance score have performed as a trading signal "
+               "at each EIA release? Historical reference only.")
 
 hist = ctx["score_history"]
 if hist.empty:

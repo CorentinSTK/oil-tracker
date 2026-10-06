@@ -43,9 +43,10 @@ pages = {
     "Risk & research": [
         st.Page("views/risk.py", title="Geopolitical risk", icon="⚠️"),
         st.Page("views/correlations.py", title="Correlations", icon="🔗"),
-        st.Page("views/backtest.py", title="Signal backtest", icon="🧪"),
+        st.Page("views/backtest.py", title="S&D Analysis (Historical)", icon="📈"),
     ],
     "Reference": [
+        st.Page("views/data_sources.py", title="Data Sources & Freshness", icon="📊"),
         st.Page("views/reports.py", title="Reports & data status", icon="🗓️"),
     ],
 }
